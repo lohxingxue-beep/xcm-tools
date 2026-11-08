@@ -259,7 +259,7 @@ export const setupBaseBuilder = (
     .feeAsset(determineFeeAsset(transformedFeeAsset))
     .sender(sender)
     .recipient(recipient)
-    .ahAddress(ahAddress);
+    .ahAddress(ahAddress || undefined);
 
   if (xcmVersion) {
     finalBuilder = finalBuilder.xcmVersion(xcmVersion);

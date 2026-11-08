@@ -176,9 +176,14 @@ const XcmTransferFormContent: FC<Props> = ({
     name: MAIN_FORM_NAME,
     initialValues: initialValues ?? queryState,
     transformValues: (values) => {
-      const { from, to, keepAlive, swapOptions } = values;
+      const { from, to, keepAlive, swapOptions, ahAddress } = values;
+      const isAhApplicable =
+        isChainEvmImpl(from, { customChainAssets }) &&
+        isChainEvmImpl(to, { customChainAssets }) &&
+        from !== to;
       return {
         ...values,
+        ahAddress: isAhApplicable ? ahAddress : '',
         // Use keepAlive only for local transfers
         keepAlive:
           from === to && !isSwapActive(swapOptions) ? keepAlive : false,
@@ -516,6 +521,12 @@ const XcmTransferFormContent: FC<Props> = ({
     isChainEvmImpl(from, { customChainAssets }) &&
     isChainEvmImpl(to, { customChainAssets }) &&
     from !== to;
+
+  useEffect(() => {
+    if (!showAhAddress && form.values.ahAddress) {
+      form.setFieldValue('ahAddress', '');
+    }
+  }, [showAhAddress, form.values.ahAddress]);
 
   const isLocalTransfer = from === to;
 
