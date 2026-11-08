@@ -86,7 +86,9 @@ describe('crypto helpers', () => {
       vi.resetAllMocks()
 
       apiMock = {
-        accountToUint8a: vi.fn(() => pubkey)
+        accountToUint8a: vi.fn(() => pubkey),
+        isChainEvm: vi.fn((c: string) => isChainEvm(c as never)),
+        getAssetsObject: vi.fn((c: string) => getAssetsObject(c as never))
       } as unknown as PolkadotApi<unknown, unknown, unknown>
     })
 

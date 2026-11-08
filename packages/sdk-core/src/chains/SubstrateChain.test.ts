@@ -109,6 +109,7 @@ describe('Parachain', () => {
     getNativeAssetSymbol: vi.fn(),
     getRelayChainSymbol: vi.fn().mockReturnValue('DOT'),
     hasPallet: vi.fn().mockReturnValue(false),
+    isChainEvm: vi.fn().mockReturnValue(false),
     localizeLocation: vi.fn()
   } as unknown as PolkadotApi<unknown, unknown, unknown>
 

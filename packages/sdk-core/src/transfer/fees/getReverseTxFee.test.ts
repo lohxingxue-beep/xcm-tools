@@ -36,7 +36,8 @@ vi.mock('../../builder', () => ({
 }))
 
 const mockApi = {
-  getPaymentInfo: vi.fn()
+  getPaymentInfo: vi.fn(),
+  isChainEvm: vi.fn((c: string) => isChainEvm(c as never))
 } as unknown as PolkadotApi<unknown, unknown, unknown>
 
 describe('getReverseTxFee', () => {

@@ -1,4 +1,4 @@
-import { getXcmPallet } from '@paraspell/pallets'
+import { getXcmPalletImpl, type TCustomChainPalletsCtx } from '@paraspell/pallets'
 import { type TSubstrateChain } from '@paraspell/sdk-common'
 
 import type { TSerializedExtrinsics, TWeight, TXcmVersioned } from '../../../types'
@@ -7,10 +7,11 @@ export const createExecuteCall = <TCustomChain extends string = never>(
   chain: TSubstrateChain | TCustomChain,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   xcm: TXcmVersioned<any>,
-  maxWeight: TWeight
+  maxWeight: TWeight,
+  ctx?: TCustomChainPalletsCtx
 ): TSerializedExtrinsics => {
   return {
-    module: getXcmPallet(chain),
+    module: getXcmPalletImpl(chain, ctx),
     method: 'execute',
     params: {
       message: xcm,

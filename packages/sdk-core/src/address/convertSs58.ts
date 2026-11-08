@@ -1,5 +1,4 @@
 import { blake2b } from '@noble/hashes/blake2.js'
-import { getAssetsObject, isChainEvm } from '@paraspell/assets'
 import type { TSubstrateChain } from '@paraspell/sdk-common'
 import { base58 } from '@scure/base'
 import { isAddress } from 'viem'
@@ -58,14 +57,14 @@ export const encodeSs58 = (payload: Uint8Array, network: number): string => {
   return base58.encode(addressBytes)
 }
 
-export const convertSs58 = <TApi, TRes, TSigner>(
-  api: PolkadotApi<TApi, TRes, TSigner>,
+export const convertSs58 = <TApi, TRes, TSigner, TCustomChain extends string = never>(
+  api: PolkadotApi<TApi, TRes, TSigner, TCustomChain>,
   address: string,
-  chain: TSubstrateChain
+  chain: TSubstrateChain | TCustomChain
 ) => {
   const isEvmAddress = isAddress(address)
 
-  if (isEvmAddress && isChainEvm(chain)) {
+  if (isEvmAddress && api.isChainEvm(chain)) {
     return address
   }
 
@@ -73,11 +72,11 @@ export const convertSs58 = <TApi, TRes, TSigner>(
     throw new InvalidAddressError('Cannot convert EVM address to SS58.')
   }
 
-  if (isChainEvm(chain)) {
+  if (api.isChainEvm(chain)) {
     throw new InvalidAddressError('Cannot convert SS58 address to EVM.')
   }
 
-  const { ss58Prefix } = getAssetsObject(chain)
+  const { ss58Prefix } = api.getAssetsObject(chain)
   const publicKey = api.accountToUint8a(address)
   return encodeSs58(deriveAccountId(publicKey), ss58Prefix)
 }

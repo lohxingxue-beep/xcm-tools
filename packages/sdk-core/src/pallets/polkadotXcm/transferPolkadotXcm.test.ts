@@ -13,7 +13,8 @@ vi.mock('@paraspell/pallets')
 vi.mock('../../utils/location')
 
 const mockApi = {
-  deserializeExtrinsics: vi.fn()
+  deserializeExtrinsics: vi.fn(),
+  getXcmPallet: vi.fn(() => getXcmPallet('Acala'))
 } as unknown as PolkadotApi<unknown, unknown, unknown>
 
 const mockLocation: TLocation = {

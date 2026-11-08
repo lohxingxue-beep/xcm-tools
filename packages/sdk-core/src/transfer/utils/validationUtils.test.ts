@@ -370,7 +370,7 @@ describe('validateAssetSpecifiers', () => {
 })
 
 describe('validateTransact', () => {
-  const mockApi = {} as PolkadotApi<unknown, unknown, unknown>
+  const mockApi = { isChainEvm: vi.fn((chain: string) => isChainEvm(chain as never)) } as unknown as PolkadotApi<unknown, unknown, unknown>
 
   const baseOptions = {
     api: mockApi,
