@@ -1,6 +1,7 @@
 import type { TCurrencyInputWithAmount, TSingleCurrencyInput, WithAmount } from '@paraspell/assets'
 import { isAssetEqual } from '@paraspell/assets'
 
+import { DEFAULT_TTL_MS } from '../../constants'
 import { MissingParameterError } from '../../errors'
 import type { TGetTransferInfoOptions, TTransferInfo } from '../../types'
 import { getXcmFee as getXcmFeeInternal } from '../fees'
@@ -30,18 +31,18 @@ export const getTransferInfo = async <
 }: TGetTransferInfoOptions<TApi, TRes, TSigner, TCustomChain, TCurrency>): Promise<
   TTransferInfo<TCurrency>
 > => {
-  if (api.isChainEvm(origin) && !ahAddress) {
-    throw new MissingParameterError('ahAddress', `ahAddress is required for EVM origin ${origin}.`)
-  }
-
-  const resolvedFeeAsset = feeAsset
-    ? resolveFeeAsset(api, feeAsset, origin, destination, currency)
-    : undefined
-
-  await api.init(origin)
+  await api.init(origin, DEFAULT_TTL_MS, destination)
   api.disconnectAllowed = false
 
   try {
+    if (api.isChainEvm(origin) && !ahAddress) {
+      throw new MissingParameterError('ahAddress', `ahAddress is required for EVM origin ${origin}.`)
+    }
+
+    const resolvedFeeAsset = feeAsset
+      ? resolveFeeAsset(api, feeAsset, origin, destination, currency)
+      : undefined
+
     const { assets, asset: originAsset } = resolveCurrency(
       api,
       currency,

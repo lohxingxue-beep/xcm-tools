@@ -258,6 +258,9 @@ export abstract class PolkadotApi<TApi, TRes, TSigner, TCustomChain extends stri
     destination?: TDestination
   ): Promise<void> {
     if (this._chain === chain || isExternalChain(chain)) {
+      if (typeof destination === 'string' && isCustomChain(destination)) {
+        await this.hydrateCustomChain(destination)
+      }
       return
     }
 

@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PolkadotApi } from '../../api'
 import { getAssetBalanceInternal, getBalanceInternal } from '../../balance'
+import { DEFAULT_TTL_MS } from '../../constants'
 import { MissingParameterError } from '../../errors'
 import type {
   TGetTransferInfoOptions,
@@ -147,7 +148,7 @@ describe('getTransferInfo', () => {
 
     const result = await getTransferInfo(options)
 
-    expect(initSpy).toHaveBeenCalledWith(options.origin)
+    expect(initSpy).toHaveBeenCalledWith(options.origin, DEFAULT_TTL_MS, options.destination)
     expect(disconnectAllowedSpy).toHaveBeenCalledWith(false)
     expect(resolveCurrency).toHaveBeenCalledWith(
       mockApi,
@@ -279,7 +280,7 @@ describe('getTransferInfo', () => {
     const initSpy = vi.spyOn(mockApi, 'init')
 
     await expect(getTransferInfo(options)).rejects.toThrow(MissingParameterError)
-    expect(initSpy).not.toHaveBeenCalled()
+    expect(initSpy).toHaveBeenCalledWith(options.origin, DEFAULT_TTL_MS, options.destination)
   })
 
   it('should use getAssetBalanceInternal for fee balance if feeAsset is not provided', async () => {
@@ -492,7 +493,7 @@ describe('getTransferInfo', () => {
 
     await getTransferInfo(options)
 
-    expect(initSpy).toHaveBeenCalledWith(options.origin)
+    expect(initSpy).toHaveBeenCalledWith(options.origin, DEFAULT_TTL_MS, options.destination)
     expect(buildHopInfo).toHaveBeenCalledWith(
       expect.objectContaining({ ahAddress: 'evmAhAddress' })
     )

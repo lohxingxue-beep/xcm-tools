@@ -12,6 +12,7 @@ import { replaceBigInt } from '@paraspell/sdk-common'
 
 import type { PolkadotApi } from '../../api'
 import { getAssetBalanceInternal } from '../../balance'
+import { DEFAULT_TTL_MS } from '../../constants'
 import { UnableToComputeError } from '../../errors'
 import type { TGetTransferableAmountOptions, TPerAssetResult } from '../../types'
 import { abstractDecimals, validateAddress } from '../../utils'
@@ -150,6 +151,8 @@ export const getTransferableAmountInternal = async <
   options: TGetTransferableAmountOptions<TApi, TRes, TSigner, TCustomChain, TCurrency>
 ): Promise<TPerAssetResult<TCurrency, bigint>> => {
   const { api, sender, origin: chain, destination, currency, feeAsset } = options
+
+  await api.init(chain, DEFAULT_TTL_MS, destination)
 
   validateAddress(api, sender, chain, false)
 

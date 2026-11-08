@@ -461,6 +461,28 @@ describe('PolkadotApi', () => {
       expect(instance._chain).toBe('Acala')
       expect(resolveChainApi).toHaveBeenCalledOnce()
     })
+
+    it('hydrates a custom destination even when already initialized on the origin chain', async () => {
+      vi.mocked(resolveChainApi).mockResolvedValue({})
+      const instance = new ConcreteApi({
+        customChains: {
+          MyCustom: {
+            paraId: 4242,
+            ecosystem: 'Polkadot',
+            providers: [{ name: 'rpc', endpoint: 'wss://example' }],
+            ss58Prefix: 42,
+            nativeAssetSymbol: 'CUS',
+            nativeAssetDecimals: 12
+          }
+        }
+      })
+      instance._chain = 'AssetHubPolkadot'
+      const hydrateSpy = vi.spyOn(instance as any, 'hydrateCustomChain').mockResolvedValue(undefined)
+
+      await instance.init('AssetHubPolkadot', undefined, 'MyCustom')
+
+      expect(hydrateSpy).toHaveBeenCalledExactlyOnceWith('MyCustom')
+    })
   })
 
   describe('maybeHydrateCustomChain', () => {
