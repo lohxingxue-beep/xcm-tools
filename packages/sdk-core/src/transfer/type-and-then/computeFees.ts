@@ -37,7 +37,6 @@ export const computeAllFees = async <TApi, TRes, TSigner, TCustomChain extends s
     origin,
     dest,
     feeAssetInfo,
-    edDeposit,
     options: { sender, recipient, currency, feeCurrency, version, overriddenAsset }
   } = context
 
@@ -72,6 +71,6 @@ export const computeAllFees = async <TApi, TRes, TSigner, TCustomChain extends s
 
   return {
     hopFees: padValueBy(hopFees, FEE_PADDING),
-    destFee: padValueBy(destFee, FEE_PADDING) + (edDeposit ?? 0n)
+    destFee: padValueBy(destFee, FEE_PADDING)
   }
 }
