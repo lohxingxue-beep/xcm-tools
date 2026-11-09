@@ -128,4 +128,16 @@ describe('createClientCache', () => {
     expect(cache.has('c')).toBe(true)
     expect(onEviction).toHaveBeenCalledTimes(1)
   })
+  it('evictIfNeeded preserves leased entries (refs > 0) over idle entries', () => {
+    const pingClient = vi.fn().mockResolvedValue(undefined)
+    const onEviction = vi.fn()
+    const cache = createClientCache<TFakeClient>(2, pingClient, onEviction)
+
+    cache.set('leased', entry(1), 1_000)
+    cache.set('idle', entry(0), 10_000)
+    cache.set('incoming', entry(0), 10_000)
+
+    expect(cache.has('leased')).toBe(true)
+    expect(onEviction).toHaveBeenCalledTimes(1)
+  })
 })

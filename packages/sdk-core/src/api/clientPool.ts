@@ -63,7 +63,7 @@ export const createClientPoolHelpers = <TClient>(
       return
     }
 
-    entry.refs -= 1
+    entry.refs = Math.max(0, entry.refs - 1)
 
     if (entry.refs === 0 && entry.destroyWanted) {
       clientPool.delete(key)

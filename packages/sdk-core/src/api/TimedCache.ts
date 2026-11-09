@@ -70,22 +70,29 @@ export const createClientCache = <T>(
       }
 
       const better =
-        (w.extended && !victim.extended) || // Prefer extended over normal
-        (w.extended === victim.extended && w.value.destroyWanted && !victim.value.destroyWanted) ||
-        (w.extended === victim.extended &&
+        w.value.refs < victim.value.refs || // Prefer unused / lower-ref entries first
+        (w.value.refs === victim.value.refs && w.extended && !victim.extended) || // Prefer extended over normal
+        (w.value.refs === victim.value.refs &&
+          w.extended === victim.extended &&
+          w.value.destroyWanted &&
+          !victim.value.destroyWanted) ||
+        (w.value.refs === victim.value.refs &&
+          w.extended === victim.extended &&
           w.value.destroyWanted === victim.value.destroyWanted &&
-          timeLeft(w) < timeLeft(victim)) ||
-        (w.extended === victim.extended &&
-          w.value.destroyWanted === victim.value.destroyWanted &&
-          timeLeft(w) === timeLeft(victim) &&
-          w.value.refs < victim.value.refs) // Prefer with less refs
+          timeLeft(w) < timeLeft(victim))
       if (better) {
         victimKey = k
         victim = w
       }
     }
 
-    if (victimKey !== undefined) evict(victimKey)
+    if (victimKey !== undefined && victim) {
+      if (victim.value.refs > 0) {
+        victim.value.destroyWanted = true
+      } else {
+        evict(victimKey)
+      }
+    }
   }
 
   const set = (k: TClientKey, v: TClientEntry<T>, ttl: number) => {
