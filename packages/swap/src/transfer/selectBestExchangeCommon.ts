@@ -37,9 +37,11 @@ export const selectBestExchangeCommon = async <
     assetTo: TAssetInfo,
     options: WithApi<T, TApi, TRes, TSigner, TCustomChain>,
     parsedAmount: string,
+    assetFromOrigin?: TAssetInfo,
+    feeAssetFromOrigin?: TAssetInfo,
   ) => Promise<bigint>,
 ): Promise<ExchangeChain> => {
-  const { api, from, exchange, to, currencyFrom, currencyTo } = options;
+  const { api, from, exchange, to, currencyFrom, currencyTo, feeAsset } = options;
 
   const assetFromOrigin = from ? findAssetInfo(from, currencyFrom) : undefined;
 
@@ -110,6 +112,11 @@ export const selectBestExchangeCommon = async <
       !(isConfig(config) && config.abstractDecimals === false),
     ).toString();
 
+    const feeAssetFromOrigin =
+      feeAsset && originSpecified
+        ? (findAssetInfo(from, feeAsset, dex.chain) ?? undefined)
+        : undefined;
+
     try {
       const amountOut = await computeAmountOut(
         dex,
@@ -117,6 +124,8 @@ export const selectBestExchangeCommon = async <
         assetTo,
         options,
         parsedAmount,
+        assetFromOrigin ?? undefined,
+        feeAssetFromOrigin,
       );
       if (amountOut > maxAmountOut) {
         bestExchange = dex;

@@ -24,7 +24,12 @@ export const getBestAmountOut = async <TApi, TRes, TSigner, TCustomChain extends
     ? await selectBestExchangeAmountOut(options, originApi)
     : createExchangeInstance(exchange);
 
-  const { assetFromOrigin, assetFromExchange: assetFrom, assetTo } = resolveAssets(dex, options);
+  const {
+    assetFromOrigin,
+    assetFromExchange: assetFrom,
+    assetTo,
+    feeAssetFromOrigin,
+  } = resolveAssets(dex, options);
 
   if (!isExchangeAutoSelect) {
     const res = await canBuildToExchangeTx(options, dex.chain, originApi, assetFromOrigin);
@@ -32,6 +37,8 @@ export const getBestAmountOut = async <TApi, TRes, TSigner, TCustomChain extends
       throw res.error;
     }
   }
+
+  const originSpecified = from && originApi && from !== dex.chain;
 
   const { config } = api;
   const exchangeConfig = convertBuilderConfig<TApi>(config);
@@ -49,6 +56,15 @@ export const getBestAmountOut = async <TApi, TRes, TSigner, TCustomChain extends
         assetFromOrigin?.decimals ?? assetFrom.decimals,
         exchangeConfig?.abstractDecimals !== false,
       ),
+      origin:
+        originSpecified && assetFromOrigin
+          ? {
+              api: originApi,
+              chain: from,
+              assetFrom: assetFromOrigin,
+              feeAssetInfo: feeAssetFromOrigin,
+            }
+          : undefined,
     }),
   };
 };

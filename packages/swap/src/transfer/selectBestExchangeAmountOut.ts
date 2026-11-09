@@ -23,14 +23,32 @@ export const selectBestExchangeAmountOut = async <
   return selectBestExchangeCommon(
     options,
     originApi,
-    async (dex, assetFromExchange, assetTo, _options, parsedAmount) => {
+    async (
+      dex,
+      assetFromExchange,
+      assetTo,
+      options,
+      parsedAmount,
+      assetFromOrigin,
+      feeAssetFromOrigin,
+    ) => {
       const exchangeApi = await options.api.createApiForChain(dex.chain);
+      const originSpecified = options.from && originApi && options.from !== dex.chain;
       return dex.getAmountOut({
         ...(await buildExchangeApiVariant(dex, exchangeConfig)),
         api: exchangeApi,
         assetFrom: assetFromExchange,
         assetTo,
         amount: BigInt(parsedAmount),
+        origin:
+          originSpecified && assetFromOrigin
+            ? {
+                api: originApi,
+                chain: options.from,
+                assetFrom: assetFromOrigin,
+                feeAssetInfo: feeAssetFromOrigin,
+              }
+            : undefined,
       });
     },
   );

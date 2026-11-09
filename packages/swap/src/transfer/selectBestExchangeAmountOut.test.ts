@@ -65,6 +65,51 @@ describe('selectBestExchangeAmountOut', () => {
     );
   });
 
+  it('should forward origin info to dex.getAmountOut when originApi and assetFromOrigin are present', async () => {
+    const fakeDex = {
+      apiType: 'PJS',
+      createApiInstance: vi.fn().mockResolvedValue('fakeApi'),
+      createApiInstancePapi: vi.fn().mockResolvedValue('fakePapiApi'),
+      getAmountOut: vi.fn().mockResolvedValue(297n),
+      chain: 'dummyDex',
+      exchangeChain: 'dummyExchange',
+    } as unknown as ExchangeChain;
+
+    const originAsset = { symbol: 'AAA', decimals: 10 } as TAssetInfo;
+    const feeAsset = { symbol: 'FEE', decimals: 10 } as TAssetInfo;
+
+    vi.mocked(selectBestExchangeCommon).mockImplementation(
+      async (options, _originApi, computeAmountOut) => {
+        await computeAmountOut(
+          fakeDex,
+          'assetFrom' as unknown as TAssetInfo,
+          'assetTo' as unknown as TAssetInfo,
+          options,
+          String(options.amount),
+          originAsset,
+          feeAsset,
+        );
+        return fakeDex;
+      },
+    );
+
+    const getAmountOutSpy = vi.spyOn(fakeDex, 'getAmountOut');
+    const originApi = 'mockOriginApi';
+
+    await selectBestExchangeAmountOut(mockOptions, originApi);
+
+    expect(getAmountOutSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        origin: {
+          api: originApi,
+          chain: 'fromDex',
+          assetFrom: originAsset,
+          feeAssetInfo: feeAsset,
+        },
+      }),
+    );
+  });
+
   it('should propagate errors thrown by selectBestExchangeCommon', async () => {
     const testError = new Error('Test error');
     vi.mocked(selectBestExchangeCommon).mockRejectedValue(testError);

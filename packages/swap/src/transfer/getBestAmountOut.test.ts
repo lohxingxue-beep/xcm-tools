@@ -125,4 +125,51 @@ describe('getBestAmountOut', () => {
       amountOut: 75,
     });
   });
+
+  it('should construct and pass origin to getAmountOut when from differs from dex.chain', async () => {
+    const options = {
+      exchange: 'AssetHubPolkadot',
+      amount: 1000,
+      currencyFrom: { symbol: 'DOT' },
+      currencyTo: { symbol: 'USDT' },
+      from: 'Acala',
+      to: undefined,
+    } as unknown as TGetBestAmountOutOptions<unknown, unknown, unknown>;
+
+    const fakeDex = {
+      chain: 'AssetHubPolkadot',
+      exchangeChain: 'AssetHubPolkadot',
+      apiType: 'PJS',
+      createApiInstance: vi.fn().mockResolvedValue('api_instance'),
+      createApiInstancePapi: vi.fn().mockResolvedValue('api_instance_papi'),
+      getAmountOut: vi.fn().mockResolvedValue(990n),
+    } as unknown as ExchangeChain;
+
+    vi.mocked(createExchangeInstance).mockReturnValue(fakeDex);
+
+    const fakeAssets = {
+      assetFromOrigin: { symbol: 'DOT', decimals: 10 } as TAssetInfo,
+      assetFromExchange: { symbol: 'DOT', decimals: 10 } as TAssetInfo,
+      assetTo: { symbol: 'USDT', decimals: 6 } as TAssetInfo,
+      feeAssetFromOrigin: { symbol: 'ACA', decimals: 12 } as TAssetInfo,
+      feeAssetFromExchange: undefined,
+    };
+    vi.mocked(resolveAssets).mockReturnValue(fakeAssets);
+
+    const getAmountOutSpy = vi.spyOn(fakeDex, 'getAmountOut');
+
+    await getBestAmountOut({ ...options, api: mockApi });
+
+    expect(getAmountOutSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        assetFrom: fakeAssets.assetFromExchange,
+        assetTo: fakeAssets.assetTo,
+        origin: expect.objectContaining({
+          chain: 'Acala',
+          assetFrom: fakeAssets.assetFromOrigin,
+          feeAssetInfo: fakeAssets.feeAssetFromOrigin,
+        }),
+      }),
+    );
+  });
 });
